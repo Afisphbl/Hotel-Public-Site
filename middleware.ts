@@ -65,6 +65,8 @@ export async function middleware(request: NextRequest) {
     headers.set('x-hotel-timezone', hotel.timezone || 'UTC');
     headers.set('x-hotel-currency', hotel.currency || 'USD');
     headers.set('x-hotel-branding', JSON.stringify(hotel.branding || {}));
+    headers.set('x-hotel-homepage-image', hotel.branding?.homePageImage || '');
+    headers.set('x-hotel-favicon', hotel.branding?.favicon || '');
 
     const response = NextResponse.next({ request: { headers } });
 

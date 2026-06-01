@@ -17,12 +17,14 @@ import { ReservationProvider } from "./_components/ReservationContext";
 export async function generateMetadata() {
   const h = headers();
   const name = h.get("x-hotel-name") || "LuxeHotel";
+  const favicon = h.get("x-hotel-favicon");
   return {
     title: {
       template: `%s / ${name}`,
       default: `Welcome / ${name}`,
     },
     description: `Book your stay at ${name}. Luxurious rooms and suites.`,
+    icons: favicon ? { icon: favicon } : undefined,
   };
 }
 
