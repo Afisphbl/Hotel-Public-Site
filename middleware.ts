@@ -25,7 +25,29 @@ export async function middleware(request: NextRequest) {
 
     if (!res.ok) {
       if (res.status === 404) {
-        return NextResponse.rewrite(new URL('/not-found', request.url));
+        return new NextResponse(
+          `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Not Found</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1b2d; color: #e0d5c1; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .container { text-align: center; max-width: 480px; padding: 2rem; }
+  h1 { font-size: 2rem; margin-bottom: 1rem; color: #c9973a; }
+  p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; }
+  .subdomain { font-weight: 600; color: #c9973a; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hotel Not Found</h1>
+    <p>There is no hotel website associated with <span class="subdomain">${subdomain}</span>.<br>Please check the URL and try again.</p>
+  </div>
+</body>
+</html>`,
+          { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+        );
       }
       return NextResponse.next();
     }

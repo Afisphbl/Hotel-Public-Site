@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import Logo from "@/app/_components/Logo";
 import Navigation from "@/app/_components/Navigation";
 
@@ -13,14 +14,17 @@ import Header from "./_components/Header";
 import AuthProvider from "./_components/AuthProvider";
 import { ReservationProvider } from "./_components/ReservationContext";
 
-export const metadata = {
-  title: {
-    template: "%s / LuxeHotel",
-    default: "Welcome / LuxeHotel",
-  },
-  description:
-    "Luxurious hotel rooms and suites, located in prime destinations worldwide. Book your perfect stay with LuxeHotel.",
-};
+export async function generateMetadata() {
+  const h = headers();
+  const name = h.get("x-hotel-name") || "LuxeHotel";
+  return {
+    title: {
+      template: `%s / ${name}`,
+      default: `Welcome / ${name}`,
+    },
+    description: `Book your stay at ${name}. Luxurious rooms and suites.`,
+  };
+}
 
 export default function RootLayout({ children }) {
   return (
