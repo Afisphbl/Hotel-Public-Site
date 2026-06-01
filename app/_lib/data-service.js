@@ -51,7 +51,18 @@ function mapRoomToCabin(room) {
   };
 }
 
-export async function getCabins({ filter, sortBy, sortOrder, page } = {}) {
+export async function getRoomTypes() {
+  const hotelId = getHotelId();
+  if (!hotelId) return [];
+  const res = await fetch(
+    `${BACKEND_URL}/public/room-types?hotelId=${encodeURIComponent(hotelId)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getCabins({ filter, sortBy, sortOrder, page, roomType } = {}) {
   const hotelId = getHotelId();
   if (!hotelId) return { items: [], total: 0, page: 1, limit: 12, totalPages: 0 };
 
@@ -68,6 +79,7 @@ export async function getCabins({ filter, sortBy, sortOrder, page } = {}) {
   if (sortBy) params.set("sortBy", sortBy);
   if (sortOrder) params.set("sortOrder", sortOrder);
   if (page) params.set("page", String(page));
+  if (roomType && roomType !== "all") params.set("roomTypeId", roomType);
 
   const res = await fetch(
     `${BACKEND_URL}/public/rooms?${params.toString()}`,
@@ -125,7 +137,10 @@ export async function getBookedDatesByCabinId(cabinId) {
   );
   if (!res.ok) return [];
   const dates = await res.json();
-  return dates.map((d) => new Date(d));
+  return dates.map((d) => {
+    const [y, m, day] = d.split('-').map(Number);
+    return new Date(y, m - 1, day);
+  });
 }
 
 export async function getSettings() {

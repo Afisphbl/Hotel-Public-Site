@@ -2,7 +2,9 @@ import { Suspense } from "react";
 import CabinList from "../_components/CabinList";
 import Spinner from "../_components/Spinner";
 import Filter from "../_components/Filter";
+import SortBy from "../_components/SortBy";
 import ReservationReminder from "../_components/ReservationReminder";
+import { getRoomTypes } from "../_lib/data-service";
 
 export const revalidate = 0;
 
@@ -10,11 +12,14 @@ export const metadata = {
   title: "Cabins",
 };
 
-export default function Page({ searchParams }) {
+export default async function Page({ searchParams }) {
   const filter = searchParams?.capacity ?? "all";
   const sortBy = searchParams?.sortBy ?? "floor";
   const sortOrder = searchParams?.sortOrder ?? "asc";
   const page = searchParams?.page ?? "1";
+  const roomType = searchParams?.roomType ?? "all";
+
+  const roomTypes = await getRoomTypes();
 
   return (
     <div>
@@ -29,12 +34,13 @@ export default function Page({ searchParams }) {
         for a peaceful, memorable stay. Welcome to LuxeHotel.
       </p>
 
-      <div className="flex justify-end mb-8">
-        <Filter />
+      <div className="flex justify-between items-center mb-8">
+        <Filter roomTypes={roomTypes} />
+        <SortBy />
       </div>
 
-      <Suspense fallback={<Spinner />} key={`${filter}-${sortBy}-${sortOrder}-${page}`}>
-        <CabinList filter={filter} sortBy={sortBy} sortOrder={sortOrder} page={page} />
+      <Suspense fallback={<Spinner />} key={`${filter}-${sortBy}-${sortOrder}-${page}-${roomType}`}>
+        <CabinList filter={filter} sortBy={sortBy} sortOrder={sortOrder} page={page} roomType={roomType} />
         <ReservationReminder />
       </Suspense>
     </div>
