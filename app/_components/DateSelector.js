@@ -15,7 +15,7 @@ function isAlreadyBooked(range, datesArr) {
     range.from &&
     range.to &&
     datesArr.some((date) =>
-      isWithinInterval(date, { start: range.from, end: range.to })
+      isWithinInterval(date, { start: range.from, end: range.to }),
     )
   );
 }
@@ -32,10 +32,10 @@ function DateSelector({ settings, cabin, bookedDates }) {
   const { minBookingLength, maxBookingLength } = settings;
 
   return (
-    <div className="flex w-full flex-col justify-between">
+    <div className='flex w-full flex-col justify-between'>
       <DayPicker
-        className="w-full pt-12 place-self-center"
-        mode="range"
+        className='w-full pt-12 place-self-center'
+        mode='range'
         onSelect={setRange}
         selected={displayRange}
         min={minBookingLength + 1}
@@ -43,7 +43,7 @@ function DateSelector({ settings, cabin, bookedDates }) {
         fromMonth={new Date()}
         fromDate={new Date()}
         toYear={new Date().getFullYear() + 5}
-        captionLayout="dropdown"
+        captionLayout='dropdown'
         numberOfMonths={2}
         disabled={(curDate) =>
           isPast(curDate) ||
@@ -51,29 +51,29 @@ function DateSelector({ settings, cabin, bookedDates }) {
         }
       />
 
-      <div className="flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]">
-        <div className="flex items-baseline gap-6">
-          <p className="flex gap-2 items-baseline">
+      <div className='flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]'>
+        <div className='flex items-baseline gap-6'>
+          <p className='flex gap-2 items-baseline'>
             {discount > 0 ? (
               <>
-                <span className="text-2xl">${regularPrice - discount}</span>
-                <span className="line-through font-semibold text-primary-700">
+                <span className='text-2xl'>${regularPrice - discount}</span>
+                <span className='line-through font-semibold text-primary-700'>
                   ${regularPrice}
                 </span>
               </>
             ) : (
-              <span className="text-2xl">${regularPrice}</span>
+              <span className='text-2xl'>${regularPrice}</span>
             )}
-            <span className="">/night</span>
+            <span className=''>/night</span>
           </p>
           {numNights ? (
             <>
-              <p className="bg-accent-600 px-3 py-2 text-2xl">
+              <p className='bg-accent-600 px-3 py-2 text-2xl'>
                 <span>&times;</span> <span>{numNights}</span>
               </p>
               <p>
-                <span className="text-lg font-bold uppercase">Total</span>{" "}
-                <span className="text-2xl font-semibold">${cabinPrice}</span>
+                <span className='text-lg font-bold uppercase'>Total</span>{" "}
+                <span className='text-2xl font-semibold'>${cabinPrice}</span>
               </p>
             </>
           ) : null}
@@ -81,7 +81,7 @@ function DateSelector({ settings, cabin, bookedDates }) {
 
         {range.from || range.to ? (
           <button
-            className="border border-primary-800 py-2 px-4 text-sm font-semibold"
+            className='border border-primary-800 py-2 px-4 text-sm font-semibold'
             onClick={resetRange}
           >
             Clear
