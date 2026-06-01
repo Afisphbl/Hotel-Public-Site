@@ -62,6 +62,17 @@ export async function getRoomTypes() {
   return res.json();
 }
 
+export async function getHotel() {
+  const hotelId = getHotelId();
+  if (!hotelId) return null;
+  const res = await fetch(
+    `${BACKEND_URL}/public/hotels/by-id/${encodeURIComponent(hotelId)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function getCabins({ filter, sortBy, sortOrder, page, roomType } = {}) {
   const hotelId = getHotelId();
   if (!hotelId) return { items: [], total: 0, page: 1, limit: 12, totalPages: 0 };
