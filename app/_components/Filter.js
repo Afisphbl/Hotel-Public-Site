@@ -12,6 +12,7 @@ function Filter() {
   function handleFilter(filter) {
     const params = new URLSearchParams(searchParams);
     params.set("capacity", filter);
+    params.set("page", "1");
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 

@@ -1,105 +1,131 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { eachDayOfInterval } from "date-fns";
 
-const cabins = [
-  {
-    id: 1,
-    name: "001",
-    maxCapacity: 2,
-    regularPrice: 250,
-    discount: 50,
-    image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
-    description: "Discover the ultimate luxury retreat in our spacious room. Immerse yourself in breathtaking views while enjoying top-tier amenities. This room offers a perfect blend of modern comfort and elegant design, featuring a king-sized bed, marble bathroom, and smart home technology. Ideal for couples seeking a romantic getaway or business travelers."
-  },
-  {
-    id: 2,
-    name: "002",
-    maxCapacity: 4,
-    regularPrice: 350,
-    discount: 0,
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
-    description: "A beautiful suite for families or small groups. Enjoy stunning city views, a fully equipped kitchenette, and a private balcony. This spacious retreat features two bedrooms, a modern bathroom, and an open-plan living area."
-  },
-  {
-    id: 3,
-    name: "003",
-    maxCapacity: 6,
-    regularPrice: 450,
-    discount: 100,
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800",
-    description: "Our premium family suite offers ample space for up to six guests. With three bedrooms, two bathrooms, a large living area, and a fully equipped kitchen, this is the perfect home away from home."
-  },
-];
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
-export async function getCabin(id) {
-  const cabin = cabins.find(c => c.id === Number(id));
-  if (!cabin) notFound();
-  return cabin;
-}
-
-export async function getCabinPrice(id) {
-  const cabin = cabins.find(c => c.id === Number(id));
-  if (!cabin) return { regularPrice: 0, discount: 0 };
-  return { regularPrice: cabin.regularPrice, discount: cabin.discount };
-}
-
-export const getCabins = async function () {
-  return cabins.map(({ id, name, maxCapacity, regularPrice, discount, image }) => ({
-    id, name, maxCapacity, regularPrice, discount, image,
-  }));
-};
-
-export async function getGuest(email) {
+function getHotelId() {
+  try {
+    const h = headers();
+    const id = h.get("x-hotel-id");
+    if (id) return id;
+  } catch {
+    // headers() throws during build time (generateStaticParams), fall through
+  }
+  const fallback = process.env.NEXT_PUBLIC_FALLBACK_HOTEL_ID;
+  if (fallback) return fallback;
   return null;
 }
 
-export async function getBooking(id) {
+function mapRoomToCabin(room) {
+  const basePrice =
+    room.basePrice != null
+      ? Number(room.basePrice)
+      : room.roomType?.basePrice != null
+        ? Number(room.roomType.basePrice)
+        : 0;
+  const effectivePrice =
+    room.effectivePrice != null ? Number(room.effectivePrice) : basePrice;
+
+  const regularPrice = Math.max(basePrice, effectivePrice);
+  const discount = effectivePrice < basePrice ? basePrice - effectivePrice : 0;
+
   return {
-    id: Number(id),
-    numGuests: 2,
-    observations: "",
-    cabinId: 1,
-    maxCapacity: 2,
+    id: room.id,
+    name: room.roomNumber,
+    maxCapacity: room.baseCapacity || room.roomType?.baseCapacity || 2,
+    regularPrice,
+    discount,
+    image:
+      room.images?.[0] ||
+      room.roomType?.image ||
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
+    description:
+      room.roomType?.description ||
+      "A comfortable room designed for your perfect stay.",
+    floor: room.floor,
+    roomTypeName: room.roomType?.name || "",
+    roomTypeId: room.roomTypeId,
+    effectivePrice,
+    basePrice,
   };
 }
 
-export async function getBookings(guestId) {
-  return [
-    {
-      id: 1,
-      created_at: "2024-05-15T10:30:00Z",
-      startDate: "2024-12-20T00:00:00Z",
-      endDate: "2024-12-23T00:00:00Z",
-      numNights: 3,
-      numGuests: 2,
-      totalPrice: 600,
-      guestId: 1,
-      cabinId: 1,
-      cabins: {
-        name: "001",
-        image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=200",
-      },
-    },
-    {
-      id: 2,
-      created_at: "2024-06-01T14:00:00Z",
-      startDate: "2025-01-10T00:00:00Z",
-      endDate: "2025-01-15T00:00:00Z",
-      numNights: 5,
-      numGuests: 4,
-      totalPrice: 1750,
-      guestId: 1,
-      cabinId: 2,
-      cabins: {
-        name: "002",
-        image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=200",
-      },
-    },
-  ];
+export async function getCabins({ filter, sortBy, sortOrder, page } = {}) {
+  const hotelId = getHotelId();
+  if (!hotelId) return { items: [], total: 0, page: 1, limit: 12, totalPages: 0 };
+
+  const params = new URLSearchParams({ hotelId });
+  if (filter === "small") {
+    params.set("minCapacity", "1");
+    params.set("maxCapacity", "3");
+  } else if (filter === "medium") {
+    params.set("minCapacity", "4");
+    params.set("maxCapacity", "7");
+  } else if (filter === "large") {
+    params.set("minCapacity", "8");
+  }
+  if (sortBy) params.set("sortBy", sortBy);
+  if (sortOrder) params.set("sortOrder", sortOrder);
+  if (page) params.set("page", String(page));
+
+  const res = await fetch(
+    `${BACKEND_URL}/public/rooms?${params.toString()}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return { items: [], total: 0, page: 1, limit: 12, totalPages: 0 };
+  const data = await res.json();
+
+  const rawItems = Array.isArray(data) ? data : (data.items || []);
+  const rawTotal = Array.isArray(data) ? data.length : (data.total ?? rawItems.length);
+
+  return {
+    items: rawItems.map(mapRoomToCabin),
+    total: rawTotal,
+    page: data.page ?? 1,
+    limit: data.limit ?? 12,
+    totalPages: data.totalPages ?? Math.ceil(rawTotal / 12),
+  };
+}
+
+export async function getCabin(id) {
+  const hotelId = getHotelId();
+  if (!hotelId) notFound();
+  const res = await fetch(
+    `${BACKEND_URL}/public/rooms/${encodeURIComponent(id)}?hotelId=${encodeURIComponent(hotelId)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) notFound();
+  const room = await res.json();
+  return mapRoomToCabin(room);
+}
+
+export async function getCabinPrice(id) {
+  const hotelId = getHotelId();
+  if (!hotelId) return { regularPrice: 0, discount: 0 };
+  const res = await fetch(
+    `${BACKEND_URL}/public/rooms/${encodeURIComponent(id)}?hotelId=${encodeURIComponent(hotelId)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return { regularPrice: 0, discount: 0 };
+  const room = await res.json();
+  const cabin = mapRoomToCabin(room);
+  return { regularPrice: cabin.regularPrice, discount: cabin.discount };
 }
 
 export async function getBookedDatesByCabinId(cabinId) {
-  return [];
+  const hotelId = getHotelId();
+  if (!hotelId) return [];
+  const today = new Date().toISOString().split("T")[0];
+  const future = new Date(Date.now() + 365 * 86400000).toISOString().split("T")[0];
+
+  const res = await fetch(
+    `${BACKEND_URL}/public/rooms/booked-dates?hotelId=${encodeURIComponent(hotelId)}&roomId=${encodeURIComponent(cabinId)}&startDate=${today}&endDate=${future}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return [];
+  const dates = await res.json();
+  return dates.map((d) => new Date(d));
 }
 
 export async function getSettings() {
@@ -107,6 +133,37 @@ export async function getSettings() {
     minBookingLength: 1,
     maxBookingLength: 30,
   };
+}
+
+export async function getGuest(email) {
+  return null;
+}
+
+export async function getBooking(id) {
+  const res = await fetch(`${BACKEND_URL}/public/bookings/${encodeURIComponent(id)}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    return {
+      id: Number(id),
+      numGuests: 2,
+      observations: "",
+      cabinId: "",
+      maxCapacity: 2,
+    };
+  }
+  const data = await res.json();
+  return {
+    id: data.id,
+    numGuests: data.numGuests,
+    observations: data.observations || "",
+    cabinId: data.cabinId || data.roomId,
+    maxCapacity: data.maxCapacity || 2,
+  };
+}
+
+export async function getBookings(guestId) {
+  return [];
 }
 
 export async function getCountries() {
@@ -119,7 +176,6 @@ export async function getCountries() {
   }
 }
 
-// Stub mutations
 export async function createGuest(newGuest) {
   return newGuest;
 }

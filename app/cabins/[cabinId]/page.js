@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Cabin from "@/app/_components/Cabin";
 import Reservation from "@/app/_components/Reservation";
 import Spinner from "@/app/_components/Spinner";
@@ -11,8 +12,12 @@ export async function generateMetadata({ params }) {
 }
 
 export async function generateStaticParams() {
-  const cabins = await getCabins();
-  return cabins.map((cabin) => ({ cabinId: String(cabin.id) }));
+  try {
+    const { items } = await getCabins();
+    return items.map((cabin) => ({ cabinId: String(cabin.id) }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function Page({ params }) {
@@ -20,6 +25,13 @@ export default async function Page({ params }) {
 
   return (
     <div className="max-w-6xl mx-auto mt-8">
+      <Link
+        href="/cabins"
+        className="inline-block mb-6 text-accent-500 hover:text-accent-400 transition-colors"
+      >
+        &larr; Back to all rooms
+      </Link>
+
       <Cabin cabin={cabin} />
 
       <div>

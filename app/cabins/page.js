@@ -4,8 +4,7 @@ import Spinner from "../_components/Spinner";
 import Filter from "../_components/Filter";
 import ReservationReminder from "../_components/ReservationReminder";
 
-export const revalidate = 3600;
-// export const revalidate = 15;
+export const revalidate = 0;
 
 export const metadata = {
   title: "Cabins",
@@ -13,6 +12,9 @@ export const metadata = {
 
 export default function Page({ searchParams }) {
   const filter = searchParams?.capacity ?? "all";
+  const sortBy = searchParams?.sortBy ?? "floor";
+  const sortOrder = searchParams?.sortOrder ?? "asc";
+  const page = searchParams?.page ?? "1";
 
   return (
     <div>
@@ -31,8 +33,8 @@ export default function Page({ searchParams }) {
         <Filter />
       </div>
 
-      <Suspense fallback={<Spinner />} key={filter}>
-        <CabinList filter={filter} />
+      <Suspense fallback={<Spinner />} key={`${filter}-${sortBy}-${sortOrder}-${page}`}>
+        <CabinList filter={filter} sortBy={sortBy} sortOrder={sortOrder} page={page} />
         <ReservationReminder />
       </Suspense>
     </div>
