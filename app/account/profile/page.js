@@ -1,3 +1,6 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/_lib/auth";
+import { redirect } from "next/navigation";
 import SelectCountry from "@/app/_components/SelectCountry";
 import UpdateProfileForm from "@/app/_components/UpdateProfileForm";
 
@@ -5,13 +8,30 @@ export const metadata = {
   title: "Update profile",
 };
 
-export default function Page() {
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  if (!session?.accessToken) redirect("/login");
+
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+
+  let backendGuest = null;
+  try {
+    const res = await fetch(`${BACKEND_URL}/public/auth/me`, {
+      headers: { Authorization: `Bearer ${session.accessToken}` },
+      cache: "no-store",
+    });
+    if (res.ok) backendGuest = await res.json();
+  } catch {}
+
   const guest = {
-    fullName: "John Doe",
-    email: "john@example.com",
-    nationality: "",
-    nationalID: "",
-    countryFlag: "",
+    fullName: backendGuest
+      ? `${backendGuest.firstName || ""} ${backendGuest.lastName || ""}`.trim()
+      : session.user.fullName,
+    email: backendGuest?.email || session.user.email,
+    nationality: backendGuest?.nationality || "",
+    nationalID: backendGuest?.nationalID || "",
+    countryFlag: backendGuest?.countryFlag || "",
   };
 
   return (
@@ -25,7 +45,7 @@ export default function Page() {
         faster and smoother. See you soon!
       </p>
 
-      <UpdateProfileForm guest={guest}>
+      <UpdateProfileForm guest={guest} accessToken={session.accessToken}>
         <SelectCountry
           name="nationality"
           id="nationality"

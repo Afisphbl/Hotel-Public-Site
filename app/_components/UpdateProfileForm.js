@@ -1,13 +1,34 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import SubmitButton from "./SubmitButton";
 
-function UpdateProfileForm({ guest, children }) {
-  const { fullName, email, nationality, countryFlag } = guest;
+function UpdateProfileForm({ guest, children, accessToken }) {
+  const router = useRouter();
+  const { fullName, email } = guest;
 
   async function handleUpdate(formData) {
-    // TODO: Connect to NestJS backend - update guest profile API
-    console.log("Update profile:", Object.fromEntries(formData));
+    const body = {};
+    const nationality = formData.get("nationality");
+    const nationalID = formData.get("nationalID");
+    if (nationality) body.nationality = nationality;
+    if (nationalID) body.nationalID = nationalID;
+
+    const BACKEND_URL =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+
+    const res = await fetch(`${BACKEND_URL}/public/auth/me`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      router.refresh();
+    }
   }
 
   return (
@@ -38,9 +59,6 @@ function UpdateProfileForm({ guest, children }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="nationality">Where are you from?</label>
-          {countryFlag && (
-            <img src={countryFlag} alt="Country flag" className="h-5 rounded-sm" />
-          )}
         </div>
 
         {children}
@@ -50,6 +68,7 @@ function UpdateProfileForm({ guest, children }) {
         <label htmlFor="nationalID">National ID number</label>
         <input
           name="nationalID"
+          defaultValue={guest.nationalID}
           className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
         />
       </div>
