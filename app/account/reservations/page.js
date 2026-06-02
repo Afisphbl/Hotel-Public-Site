@@ -1,12 +1,17 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/_lib/auth";
+import { redirect } from "next/navigation";
 import ReservationList from "@/app/_components/ReservationList";
-import { getBookings } from "@/app/_lib/data-service";
+import { getGuestBookings } from "@/app/_lib/data-service";
 
 export const metadata = {
   title: "Reservations",
 };
 
 export default async function Page() {
-  const bookings = await getBookings(1);
+  const session = await getServerSession(authOptions);
+  if (!session?.accessToken) redirect("/login");
+  const bookings = await getGuestBookings(session.accessToken);
 
   return (
     <div>

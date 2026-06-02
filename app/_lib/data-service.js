@@ -177,6 +177,24 @@ export async function getGuest(email) {
   return null;
 }
 
+export async function getGuestBookings(accessToken) {
+  const res = await fetch(`${BACKEND_URL}/public/auth/bookings`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getGuestProfile(accessToken) {
+  const res = await fetch(`${BACKEND_URL}/public/auth/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function getBooking(id) {
   const res = await fetch(`${BACKEND_URL}/public/bookings/${encodeURIComponent(id)}`, {
     cache: "no-store",
