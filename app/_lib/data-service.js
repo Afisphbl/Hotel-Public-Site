@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { BACKEND_URL, createReview, createBooking, getCountries } from "./data-service-shared";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+export { createReview, createBooking, getCountries };
 
 function getHotelId() {
   try {
@@ -136,6 +136,18 @@ export async function getCabinPrice(id) {
   return { regularPrice: cabin.regularPrice, discount: cabin.discount };
 }
 
+export async function getReviews(roomId) {
+  const hotelId = getHotelId();
+  if (!hotelId) return { reviews: [], stats: { average: 0, count: 0 } };
+
+  const res = await fetch(
+    `${BACKEND_URL}/public/reviews/${encodeURIComponent(roomId)}?hotelId=${encodeURIComponent(hotelId)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return { reviews: [], stats: { average: 0, count: 0 } };
+  return res.json();
+}
+
 export async function getBookedDatesByCabinId(cabinId) {
   const hotelId = getHotelId();
   if (!hotelId) return [];
@@ -190,16 +202,6 @@ export async function getBooking(id) {
 
 export async function getBookings(guestId) {
   return [];
-}
-
-export async function getCountries() {
-  try {
-    const res = await fetch("https://restcountries.com/v2/all?fields=name,flag");
-    const countries = await res.json();
-    return countries;
-  } catch {
-    throw new Error("Could not fetch countries");
-  }
 }
 
 export async function createGuest(newGuest) {

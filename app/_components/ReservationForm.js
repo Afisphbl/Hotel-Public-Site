@@ -1,10 +1,26 @@
 "use client";
 
 import { differenceInDays } from "date-fns";
+import { useRouter } from "next/navigation";
 import { useReservation } from "./ReservationContext";
+import { createBooking } from "../_lib/data-service-shared";
 import SubmitButton from "./SubmitButton";
 
+function formatLocalDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getHotelId() {
+  if (typeof document === "undefined") return null;
+  const meta = document.querySelector('meta[name="x-hotel-id"]');
+  return meta?.getAttribute("content") || null;
+}
+
 function ReservationForm({ cabin, user }) {
+  const router = useRouter();
   const { range, resetRange } = useReservation();
   const { maxCapacity, regularPrice, discount, id } = cabin;
 
@@ -15,16 +31,46 @@ function ReservationForm({ cabin, user }) {
   const cabinPrice = numNights * (regularPrice - discount);
 
   async function handleBooking(formData) {
-    // TODO: Connect to NestJS backend booking API
-    console.log("Booking data:", {
-      startDate,
-      endDate,
-      numNights,
-      cabinPrice,
-      cabinId: id,
-    });
-    console.log("Form data:", Object.fromEntries(formData));
-    resetRange();
+    const hotelId = getHotelId();
+    if (!hotelId) {
+      alert("Hotel configuration not found");
+      return;
+    }
+
+    const numGuests = Number(formData.get("numGuests"));
+    const observations = formData.get("observations") || "";
+
+    if (!startDate || !endDate) return;
+
+    try {
+      console.log('[ReservationForm] Sending dates:', {
+        startDate,
+        endDate,
+        checkIn: formatLocalDate(startDate),
+        checkOut: formatLocalDate(endDate),
+      });
+      const result = await createBooking(
+        {
+          roomId: id,
+          checkIn: formatLocalDate(startDate),
+          checkOut: formatLocalDate(endDate),
+          numGuests,
+          notes: observations,
+          firstName: user.name?.split(" ")[0] || "",
+          lastName: user.name?.split(" ").slice(1).join(" ") || "",
+          email: user.email || "",
+        },
+        hotelId,
+      );
+
+      resetRange();
+
+      if (result.checkoutUrl) {
+        window.location.href = result.checkoutUrl;
+      }
+    } catch (err) {
+      alert(err.message || "Failed to create booking");
+    }
   }
 
   return (

@@ -29,11 +29,15 @@ export async function generateMetadata() {
 }
 
 export default function RootLayout({ children }) {
+  const h = headers();
+  const hotelId = h.get("x-hotel-id") || "";
+
   return (
     <html lang="en">
       <body
         className={`${josefin.className} antialiased bg-primary-950 text-primary-100 min-h-screen flex flex-col relative`}
       >
+        <meta name="x-hotel-id" content={hotelId} />
         <AuthProvider>
           <Header />
 
