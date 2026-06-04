@@ -26,6 +26,18 @@ function Cabin({ cabin }) {
           <TextExpander>{description}</TextExpander>
         </p>
 
+        <p className="flex gap-3 items-baseline mb-10">
+          {discount > 0 ? (
+            <>
+              <span className="text-3xl font-[350]">${regularPrice - discount}</span>
+              <span className="line-through font-semibold text-primary-600">${regularPrice}</span>
+            </>
+          ) : (
+            <span className="text-3xl font-[350]">${regularPrice}</span>
+          )}
+          <span className="text-primary-200">/ night</span>
+        </p>
+
         <ul className="flex flex-col gap-4 mb-7">
           <li className="flex gap-3 items-center">
             <UsersIcon className="h-5 w-5 text-primary-600" />
