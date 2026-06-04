@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { BACKEND_URL, createReview, createBooking, getCountries } from "./data-service-shared";
+import { BACKEND_URL, createReview, createBooking, getCountries, calculatePrice } from "./data-service-shared";
 
-export { createReview, createBooking, getCountries };
+export { createReview, createBooking, getCountries, calculatePrice };
 
 function getHotelId() {
   try {

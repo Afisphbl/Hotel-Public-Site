@@ -37,6 +37,19 @@ export async function createBooking(bookingData, hotelId) {
   return res.json();
 }
 
+export async function calculatePrice({ hotelId, roomId, checkIn, checkOut }) {
+  const res = await fetch(`${BACKEND_URL}/public/rooms/calculate-price`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hotelId, roomId, checkIn, checkOut }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to calculate price");
+  }
+  return res.json();
+}
+
 export async function getCountries() {
   try {
     const res = await fetch("https://restcountries.com/v2/all?fields=name,flag");
