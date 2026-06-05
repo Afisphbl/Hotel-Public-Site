@@ -54,7 +54,32 @@ export async function middleware(request: NextRequest) {
 
     const hotel = await res.json();
 
-    console.log(`[Middleware] Serving hotel: "${hotel.name}" (subdomain: ${hotel.subdomain}, id: ${hotel.id})`);
+    if (hotel.status === 'SUSPENDED') {
+      return new NextResponse(
+        `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Temporarily Unavailable</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1b2d; color: #e0d5c1; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .container { text-align: center; max-width: 480px; padding: 2rem; }
+  .icon { font-size: 3rem; margin-bottom: 1rem; }
+  h1 { font-size: 2rem; margin-bottom: 1rem; color: #c9973a; }
+  p { font-size: 1.1rem; line-height: 1.6; color: #a89880; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔒</div>
+    <h1>Temporarily Unavailable</h1>
+    <p>${hotel.name} is temporarily unavailable due to a billing issue.<br>Please check back later.</p>
+  </div>
+</body>
+</html>`,
+        { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+      );
+    }
 
     // Attach hotel context to request headers for downstream consumption
     const headers = new Headers(request.headers);
