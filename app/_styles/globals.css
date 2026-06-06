@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .scrollbar-dark::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-dark::-webkit-scrollbar-track {
+    background: theme("colors.primary.900");
+  }
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    background: theme("colors.primary.700");
+    border-radius: 3px;
+  }
+  .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.primary.600");
+  }
+}
+
 @layer components {
   .spinner {
     margin: 3.2rem auto 1.6rem;

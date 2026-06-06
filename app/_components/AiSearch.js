@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { interpretAiSearch } from "../_lib/data-service";
+import { interpretAiSearch } from "../_lib/data-service-shared";
 
 function AiSearch({ hotelId }) {
   const [query, setQuery] = useState("");

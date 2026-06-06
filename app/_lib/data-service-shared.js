@@ -65,11 +65,11 @@ export async function interpretAiSearch(query, hotelId) {
   return res.json();
 }
 
-export async function aiChat(message, history, hotelId) {
+export async function aiChat(message, history, hotelId, user = null) {
   const res = await fetch(`${BACKEND_URL}/ai/chat?hotelId=${encodeURIComponent(hotelId)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, user }),
   });
 
   if (!res.ok) {

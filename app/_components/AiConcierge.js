@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { aiChat } from "../_lib/data-service";
 
+
 function AiConcierge({ hotelId }) {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
@@ -26,7 +29,7 @@ function AiConcierge({ hotelId }) {
     setIsLoading(true);
 
     try {
-      const { response } = await aiChat(message, chatHistory, hotelId);
+      const { response } = await aiChat(message, chatHistory, hotelId, session?.user);
       const assistantMessage = { role: "model", parts: [{ text: response }] };
       setChatHistory((prev) => [...prev, assistantMessage]);
     } catch (err) {
@@ -59,7 +62,7 @@ function AiConcierge({ hotelId }) {
             </button>
           </div>
 
-          <div className="flex-1 h-80 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+          <div className="h-80 overflow-y-auto p-4 space-y-4 scrollbar-dark">
             {chatHistory.length === 0 && (
               <p className="text-primary-400 text-sm italic text-center">
                 Hi! I'm your AI concierge. Ask me anything about our hotel or rooms!
