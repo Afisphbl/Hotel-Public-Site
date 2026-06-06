@@ -13,6 +13,7 @@ import "@/app/_styles/globals.css";
 import Header from "./_components/Header";
 import AuthProvider from "./_components/AuthProvider";
 import { ReservationProvider } from "./_components/ReservationContext";
+import AiConcierge from "./_components/AiConcierge";
 
 export async function generateMetadata() {
   const h = headers();
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
               <ReservationProvider>{children}</ReservationProvider>
             </main>
           </div>
+          <AiConcierge hotelId={hotelId} />
         </AuthProvider>
       </body>
     </html>

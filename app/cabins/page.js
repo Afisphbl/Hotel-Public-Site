@@ -3,6 +3,7 @@ import CabinList from "../_components/CabinList";
 import Spinner from "../_components/Spinner";
 import Filter from "../_components/Filter";
 import SortBy from "../_components/SortBy";
+import AiSearch from "../_components/AiSearch";
 import ReservationReminder from "../_components/ReservationReminder";
 import { getRoomTypes, getHotel } from "../_lib/data-service";
 
@@ -33,6 +34,8 @@ export default async function Page({ searchParams }) {
         {hotel?.description ||
           "Cozy yet luxurious rooms, located in prime destinations worldwide. Imagine waking up to beautiful views, spending your days exploring vibrant cities, or just relaxing in our premium accommodations. Enjoy world-class hospitality in your home away from home. The perfect spot for a peaceful, memorable stay. Welcome to LuxeHotel."}
       </p>
+
+      <AiSearch hotelId={hotel?.id} />
 
       <div className="flex justify-between items-center mb-8">
         <Filter roomTypes={roomTypes} />

@@ -50,6 +50,36 @@ export async function calculatePrice({ hotelId, roomId, checkIn, checkOut }) {
   return res.json();
 }
 
+export async function interpretAiSearch(query, hotelId) {
+  const res = await fetch(`${BACKEND_URL}/ai/interpret-search?hotelId=${encodeURIComponent(hotelId)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to interpret AI search");
+  }
+
+  return res.json();
+}
+
+export async function aiChat(message, history, hotelId) {
+  const res = await fetch(`${BACKEND_URL}/ai/chat?hotelId=${encodeURIComponent(hotelId)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, history }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to process chat message");
+  }
+
+  return res.json();
+}
+
 export async function getCountries() {
   try {
     const res = await fetch("https://restcountries.com/v2/all?fields=name,flag");
