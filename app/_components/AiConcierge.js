@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { aiChat } from "../_lib/data-service";
 
-
 function AiConcierge({ hotelId }) {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -29,9 +28,24 @@ function AiConcierge({ hotelId }) {
     setIsLoading(true);
 
     try {
-      const { response } = await aiChat(message, chatHistory, hotelId, session?.user);
+      const { response, checkoutUrl } = await aiChat(message, chatHistory, hotelId, session?.user);
       const assistantMessage = { role: "model", parts: [{ text: response }] };
       setChatHistory((prev) => [...prev, assistantMessage]);
+
+      // If a checkout URL was provided, redirect after 5 seconds
+      if (checkoutUrl) {
+        setTimeout(() => {
+          const redirectMsg = { 
+            role: "model", 
+            parts: [{ text: "Redirecting you to the payment gateway now... 🚀" }] 
+          };
+          setChatHistory((prev) => [...prev, redirectMsg]);
+          
+          setTimeout(() => {
+            window.location.href = checkoutUrl;
+          }, 2000);
+        }, 3000);
+      }
     } catch (err) {
       console.error("Chat Error:", err);
       setChatHistory((prev) => [
