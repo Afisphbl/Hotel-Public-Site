@@ -70,7 +70,7 @@ function AiSearch({ hotelId }) {
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <p className="text-primary-400 text-xs italic">
-          Tip: Our AI understands natural language. Just tell us what you're looking for!
+          Tip: Our AI understands natural language. Just tell us what you&apos;re looking for!
         </p>
       </form>
     </div>

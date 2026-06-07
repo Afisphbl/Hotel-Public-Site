@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { aiChat } from "../_lib/data-service";
+import { aiChat } from "../_lib/data-service-shared";
 
 function AiConcierge({ hotelId }) {
   const { data: session } = useSession();
@@ -31,16 +31,15 @@ function AiConcierge({ hotelId }) {
       const { response, checkoutUrl } = await aiChat(message, chatHistory, hotelId, session?.user);
       const assistantMessage = { role: "model", parts: [{ text: response }] };
       setChatHistory((prev) => [...prev, assistantMessage]);
-
       // If a checkout URL was provided, redirect after 5 seconds
       if (checkoutUrl) {
         setTimeout(() => {
-          const redirectMsg = { 
-            role: "model", 
-            parts: [{ text: "Redirecting you to the payment gateway now... 🚀" }] 
+          const redirectMsg = {
+            role: "model",
+            parts: [{ text: "Redirecting you to the payment gateway now... 🚀" }]
           };
           setChatHistory((prev) => [...prev, redirectMsg]);
-          
+
           setTimeout(() => {
             window.location.href = checkoutUrl;
           }, 2000);
@@ -79,7 +78,7 @@ function AiConcierge({ hotelId }) {
           <div className="h-80 overflow-y-auto p-4 space-y-4 scrollbar-dark">
             {chatHistory.length === 0 && (
               <p className="text-primary-400 text-sm italic text-center">
-                Hi! I'm your AI concierge. Ask me anything about our hotel or rooms!
+                Hi! I&apos;m your AI concierge. Ask me anything about our hotel or rooms!
               </p>
             )}
             {chatHistory.map((chat, index) => (
